@@ -37,6 +37,9 @@ const handler = async (event) => {
     return {
       statusCode: 200,
       body: JSON.stringify({ request }),
+      headers: {
+        "access-control-allow-origin": "*",
+      }
       // // more keys you can return:
       // headers: { "headerName": "headerValue", ... },
       // isBase64Encoded: true,
