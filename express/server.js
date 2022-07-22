@@ -44,6 +44,7 @@ router.get('/', (req, res) => {
 
 
 router.get('/getCampaigns/', async (req, res) => {
+
     const config = {
         headers : {
             //Host : 'http://localhost:3000/',
@@ -51,7 +52,10 @@ router.get('/getCampaigns/', async (req, res) => {
         }
     }
 
-    const url = `${DG_ENDPOINT}/campaigns`;
+    const url = `${DG_ENDPOINT}/campaigns/`;
+
+
+    console.log('Get Campaigns', url);
 
     await axios.get(url ,config)
         .then( function( response ) {
@@ -113,21 +117,61 @@ router.get('/log/:id', async (req, res) => {
 
     const url = `${DG_ENDPOINT}/action-log-feed?campaign_ids=${campaign_id}`;
 
-    const request = await handleCampaignLogPagination(url, config);
+    await axios.get(url ,config)
+        .then( function( response ) {
+            console.log('OK: ', response);
 
-    request.results = sumTrackingInformation(request.data);
+            const results = response.data;
 
-    res.json(request);
+            res.json ({
+                status: response.status,
+                data: results,
+                count : response?.data?.count
+            });
+        })
+        .catch( function( error ) {
+            console.error('ERROR: ', error?.response?.status);
+    });// await handleCampaignLogPagination(url, config);
+
+
+    //request.results = sumTrackingInformation(request.data);
+
+    //res.json({request});
+});
+
+
+router.get('/log-by-date/:id', async (req, res) => {
+
+  const date = '2022-07-11';
+
+  const campaign_id = 6607;
+  const config = {
+      headers : {
+          //Host : 'http://localhost:3000/',
+          Authorization : `Token ${DG_API_KEY}`
+      }
+  }
+
+  const url = `${DG_ENDPOINT}/action-log-feed?campaign_ids=${campaign_id}`;
+  const request = await lib.getCampaignLogByDay(url, config, date);
+
+  res.json(request);
+
+   
+ 
+
 });
 
 
 router.post('/', (req, res) => res.json({ postBody: req.body }));
 
-app.use('/.netlify/functions/server', router);  // path must route to lambda
-app.use('/', (req, res) => res.sendFile(path.join(__dirname, '../index.html')));
-
 
 app.use(router);
 
 module.exports = app;
-module.exports.handler = serverless(app); 
+
+if(process.env.ENV !== 'dev') {
+    app.use('/.netlify/functions/server', router);  // path must route to lambda
+    app.use('/', (req, res) => res.sendFile(path.join(__dirname, '../index.html')));
+    module.exports.handler = serverless(app); 
+}
