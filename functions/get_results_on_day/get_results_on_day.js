@@ -29,10 +29,10 @@ const handler = async (event) => {
   const url = `${DG_ENDPOINT}/action-log-feed?campaign_ids=${campaign_id}`;
 
   try {
-    const date = event.queryStringParameters.name || '2022-07-10T13:51:00.195';
+    const since = event.queryStringParameters.since || '2022-07-10T13:51:00.195';
     const page = event.queryStringParameters.page || 0;
 
-    const request = await getCampaignLogByDay(url, config, date, page);
+    const request = await getCampaignLogByDay(url, config, since, page);
 
     //request.results = sumTrackingInformation(request.data);
 
